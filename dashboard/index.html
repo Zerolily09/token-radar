@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar — pre-token protocols ranked by implied launch value</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<a class="skip" href="#board">Skip to the board</a>
+<header class="masthead">
+  <div class="masthead-in">
+    <p class="kicker">Token Radar · model radar-2 · sealed DefiLlama snapshot <span id="asof"></span></p>
+    <h1>Protocols that have not launched a token yet, ranked by what the launch would be worth.</h1>
+    <p class="lede" id="headline">Reading the snapshot…</p>
+    <dl class="stats" id="stats"></dl>
+  </div>
+</header>
+
+<main>
+  <section class="method" aria-labelledby="method-h">
+    <h2 id="method-h">How the ranking works</h2>
+    <p>
+      A protocol with no token is worth, as a first estimate, what the market already pays for
+      comparable protocols that have one. The snapshot carries those comparables itself: every
+      traded protocol has a market cap and a TVL, so each category gets its own
+      <strong>value multiple</strong> — the median market-cap / TVL of its traded members,
+      shrunk toward the market-wide median when a category has few traded members to judge by.
+      A pre-token protocol's base value is its TVL times its category's multiple. Three
+      adjustments follow, each from the protocol's own record:
+      <strong>momentum</strong> (its 7-day TVL change, clamped to −50%…+100% and damped, so one
+      hot week cannot dominate), <strong>maturity</strong> (the longer DefiLlama has tracked a
+      protocol, the closer it earns the full multiple, up to three years), and
+      <strong>breadth</strong> (each extra chain is another community a launch can drop to).
+      No name is special-cased: one function scores every row, and every row's detail view
+      shows its own arithmetic.
+    </p>
+    <p class="formula">
+      implied value = TVL × category multiple × (1 + clamped 7d change × 0.35)
+      × (0.65 + 0.35 × min(age, 3y) / 3y) × (1 + 0.02 × extra chains, up to 7)
+    </p>
+    <div id="peers"></div>
+    <p class="coverage">
+      Coverage: every protocol on the snapshot's watchlist (pre-token, at least $50M TVL, not a
+      wrapped or staked product) is ranked, and the radar keeps going — every other pre-token
+      protocol at or above $10M TVL that is not an exchange, a versioned pool, or a wrapped,
+      staked or bridged product. Protocols that already trade are never ranked; the Live view
+      shows them at the market's own values, which is also where the multiples come from.
+    </p>
+  </section>
+
+  <section class="sandbox" aria-labelledby="sandbox-h">
+    <h2 id="sandbox-h">Model sandbox</h2>
+    <p>Move a slider and the board re-ranks at once, so you can see which rows are robust and
+    which stand on one assumption. The handed-in board uses the stated model.</p>
+    <div class="sliders">
+      <label>Momentum weight <output id="o-growth"></output>
+        <input type="range" id="s-growth" min="0" max="0.8" step="0.05"></label>
+      <label>Maturity range <output id="o-maturity"></output>
+        <input type="range" id="s-maturity" min="0" max="0.6" step="0.05"></label>
+      <label>Breadth per chain <output id="o-breadth"></output>
+        <input type="range" id="s-breadth" min="0" max="0.05" step="0.005"></label>
+      <button type="button" id="s-reset">Reset to the stated model</button>
+    </div>
+  </section>
+
+  <section aria-labelledby="board-h">
+    <div class="board-head">
+      <h2 id="board-h">The board</h2>
+      <div class="viewtoggle" role="group" aria-label="View">
+        <button type="button" id="v-board" class="on">Pre-token board</button>
+        <button type="button" id="v-live">Live tokens</button>
+      </div>
+    </div>
+    <form class="controls" id="controls">
+      <label>Search <input type="search" id="q" placeholder="Name or slug"></label>
+      <label>Category <select id="f-category"></select></label>
+      <label>Chain <select id="f-chain"></select></label>
+      <label>Set <select id="f-set">
+        <option value="all">Whole board</option>
+        <option value="watchlist">Watchlist only</option>
+        <option value="early">Early radar only</option>
+      </select></label>
+      <label>Sort <select id="f-sort">
+        <option value="implied">Implied value</option>
+        <option value="tvl">TVL</option>
+        <option value="growth">7-day change</option>
+        <option value="age">Age</option>
+        <option value="multiple">Category multiple</option>
+      </select></label>
+      <span class="count" id="count"></span>
+    </form>
+    <div id="board" tabindex="-1" aria-busy="true"></div>
+  </section>
+
+  <section id="detail" aria-labelledby="detail-h" hidden>
+    <h2 id="detail-h">Protocol detail</h2>
+    <div id="detail-body"></div>
+  </section>
+
+  <footer>
+    <p id="source-line"></p>
+    <p>Implied values are a model's estimates from one frozen snapshot, not prices and not
+    advice. Farm plans are checklists for earning a possible allocation; most protocols here
+    may never launch a token, and every position carries the protocol's own risks.</p>
+  </footer>
+</main>
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
